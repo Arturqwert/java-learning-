@@ -11,7 +11,7 @@ import java.util.Collection;
 public class DataProviderJSON_Impl implements DataProviderJSON{
 
     private final ObjectMapper mapper;
-    private String path;
+    public static String path;
     public DataProviderJSON_Impl() {
        mapper = new ObjectMapper();
        path = "C:\\Users\\artur\\IdeaProjects\\first-java-program\\src\\main\\java\\PlayersApp\\storage\\players.json";

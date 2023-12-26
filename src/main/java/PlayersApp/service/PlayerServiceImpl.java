@@ -18,11 +18,12 @@ public class PlayerServiceImpl implements PlayerService{
         provider = new DataProviderJSON_Impl();
         playersMap = new HashMap<>();
         nicknames = new HashSet<>();
+        playersFromFileToCollections();
     }
 
     @Override
     public Collection<Player> getPlayers() {
-        return playersFromFileToCollections();
+        return playersMap.values();
     }
 
     @Override
@@ -67,7 +68,7 @@ public class PlayerServiceImpl implements PlayerService{
         return points;
     }
 
-    private Collection<Player> playersFromFileToCollections() {
+    private void playersFromFileToCollections() {
         Collection<Player> players = Collections.emptyList();
         try {
             players = provider.load();
@@ -83,7 +84,6 @@ public class PlayerServiceImpl implements PlayerService{
             if(player.getId() > counter)
                 counter = player.getId();
         }
-        return players;
     }
     private void checkPlayerInMap(int playerId) {
         if(!playersMap.containsKey(playerId))
