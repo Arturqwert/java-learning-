@@ -3,6 +3,9 @@ package PlayersApp.service;
 import PlayersApp.Data.DataProviderJSON;
 import PlayersApp.Data.DataProviderJSON_Impl;
 import PlayersApp.Model.Player;
+import PlayersApp.Model.Response;
+import PlayersApp.Model.ResponseInt;
+import PlayersApp.Model.Statuses;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
@@ -22,50 +25,54 @@ public class PlayerServiceImpl implements PlayerService{
     }
 
     @Override
-    public Collection<Player> getPlayers() {
-        return playersMap.values();
+    public Response<Collection<Player>> getPlayers() {
+        return new Response<>(Statuses.OK, "getCollectionPlayers", playersMap.values());
     }
 
     @Override
-    public Player getPlayerById(int playerId) {
+    public Response<Player> getPlayerById(int playerId) {
         playersFromFileToCollections();
 
         checkPlayerInMap(playerId);
-        return playersMap.get(playerId);
+        return new Response<>(Statuses.OK, "getPlayerById", playersMap.get(playerId));
     }
 
     @Override
-    public int createPlayer(String nickname) {
+    public Response<Integer> createPlayer(String nickname) {
         if(nicknames.contains(nickname))
         {
-            throw new IllegalArgumentException("Player with nick " + nickname + " already exist");
+            return new Response<>(Statuses.BAD_REQUEST, "Player with nick " + nickname + " already exist", -1);
         }
         counter++;
         Player player = new Player(nickname, counter, 0, true);
         playersMap.put(counter, player);
         nicknames.add(nickname);
         savePlayersToFile();
-        return player.getId();
+        return new Response<>(Statuses.OK, "player is created", player.getId());
     }
 
     @Override
-    public Player deletePlayerById(int playerId) {
+    public Response<Player> deletePlayerById(int playerId) {
         playersFromFileToCollections();
         checkPlayerInMap(playerId);
         var res = playersMap.remove(playerId);
         savePlayersToFile();
 
-        return res;
+        return new Response<>(Statuses.OK, "playerDeleted", res);
     }
 
     @Override
-    public int addPoints(int playerId, int points) {
+    public Response<Integer> addPoints(int playerId, int points) {
+        if(points <= 0)
+        {
+            return new Response<>(Statuses.BAD_REQUEST, "invalid points amount", -1);
+        }
         playersFromFileToCollections();
         checkPlayerInMap(playerId);
         Player player = playersMap.get(playerId);
         player.setPoints(player.getPoints() + points);
         savePlayersToFile();
-        return points;
+        return new Response<>(Statuses.OK, points + "points added to " + player.getNick(), points);
     }
 
     private void playersFromFileToCollections() {

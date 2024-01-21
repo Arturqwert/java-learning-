@@ -3,6 +3,8 @@ import PlayersApp.Extensions.HtmlReporter;
 import PlayersApp.Extensions.PlayersAppExt;
 import PlayersApp.Extensions.Watcher;
 import PlayersApp.Model.Player;
+import PlayersApp.Model.Response;
+import PlayersApp.Model.ResponseInt;
 import PlayersApp.service.PlayerService;
 import PlayersApp.service.PlayerServiceImpl;
 import org.junit.jupiter.api.*;
@@ -41,7 +43,7 @@ public class JunitPlayersAppTest {
         System.out.println("additional logics");
     }
 
-    @DisplayName("создание юзера tester.")
+    @DisplayName("создание юзеров из getNames.")
     @ParameterizedTest(name = "{index} => nick - {0}")
     @MethodSource("getNames")
     public void shouldCreateFile(String name) {
@@ -59,10 +61,10 @@ public class JunitPlayersAppTest {
     @ValueSource(ints = {10, 1, 5})
     @Tag("CRITICAL")
     public void shouldAddPointsToPlayer(int points) {
-        int playerId = service.createPlayer("tester");
+        Response<Integer> response = service.createPlayer("tester");
 
-        service.addPoints(playerId, points);
-        Player player = service.getPlayerById(1);
-        assertEquals(10, player.getPoints());
+        service.addPoints(response.getPayload(), points);
+        Response<Player> player = service.getPlayerById(response.getPayload());
+        assertEquals(points, player.getPayload().getPoints());
     }
 }

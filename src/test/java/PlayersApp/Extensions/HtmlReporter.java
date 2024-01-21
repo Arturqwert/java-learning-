@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.TestWatcher;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,8 +26,8 @@ public class HtmlReporter implements TestWatcher, BeforeAllCallback, AfterAllCal
                     <body>
                           <table>
                                 <thead>
-                                    <th>name</th>
-                                    <th>status</th>
+                                    <th style="background-color:purple">name</th>
+                                    <th style="background-color:purple">status</th>
                                 </thead>
                                 
                                 <tbody> 
@@ -38,6 +39,8 @@ public class HtmlReporter implements TestWatcher, BeforeAllCallback, AfterAllCal
                     </body>
                     </html>
                     """;
+
+    private final String path = LocalDateTime.now().toLocalDate() + "report.html";
     @Override
     public void testDisabled(ExtensionContext context, Optional<String> reason) {
         TestWatcher.super.testDisabled(context, reason);
@@ -64,18 +67,25 @@ public class HtmlReporter implements TestWatcher, BeforeAllCallback, AfterAllCal
 
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
-        Files.writeString(Path.of("repore.html"), head,StandardOpenOption.CREATE);
+
+        String color = null;
+        Files.writeString(Path.of(path), head,StandardOpenOption.CREATE);
 
         for (String status : report.keySet()) {
-            String line = "<tr><td>" + status + "</td><td>" + report.get(status) + "</td></tr>";
+            if(report.get(status).equals("success"))
+                color = "green";
+            else
+                color = "red";
+            String line = "<tr><td>" + status + "</td><td style=\"background-color:" + color + "\">" + report.get(status) + "</td></tr>";
 
-            Files.writeString(Path.of("repore.html"), line, StandardOpenOption.APPEND);
+            Files.writeString(Path.of(path), line, StandardOpenOption.APPEND);
         }
-        Files.writeString(Path.of("repore.html"), tail, StandardOpenOption.APPEND);
+        Files.writeString(Path.of(path), tail, StandardOpenOption.APPEND);
     }
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
         report = new HashMap<>();
+        Files.deleteIfExists(Path.of(path));
     }
 }

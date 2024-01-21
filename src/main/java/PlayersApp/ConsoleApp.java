@@ -1,6 +1,9 @@
 package PlayersApp;
 
 import PlayersApp.Model.Player;
+import PlayersApp.Model.Response;
+import PlayersApp.Model.ResponseInt;
+import PlayersApp.Model.Statuses;
 import PlayersApp.service.PlayerService;
 import PlayersApp.service.PlayerServiceImpl;
 
@@ -39,31 +42,34 @@ public class ConsoleApp {
 
                 if (input.equalsIgnoreCase("list")) {
                     var players = service.getPlayers();
-                    if (players.isEmpty()) {
+                    if (players.getPayload().isEmpty()) {
                         System.out.println("list is empty");
                     }
-                    for (Player player : players) {
+                    for (Player player : players.getPayload()) {
                         System.out.println(player);
                     }
                 }
 
                 if (input.startsWith("add")) {
                     String nick = input.substring(4);
-                    service.createPlayer(nick);
-                    System.out.println("player with nickname " + nick + " was added");
+                    Response<Integer> response = service.createPlayer(nick);
+                    if(response.getStatus().equals(Statuses.OK))
+                        System.out.println(response.getMessage());
+                    else
+                        System.err.println(response.getMessage());
                 }
 
                 if (input.startsWith("get")) {
                     String idAsString = input.substring(4);
                     int id = Integer.parseInt(idAsString);
-                    Player player = service.getPlayerById(id);
+                    Player player = service.getPlayerById(id).getPayload();
                     System.out.println(player);
                 }
 
                 if (input.startsWith("delete")) {
                     String idAsString = input.substring(7);
                     int id = Integer.parseInt(idAsString);
-                    Player player = service.deletePlayerById(id);
+                    Player player = service.deletePlayerById(id).getPayload();
                     System.out.println(player.getNick() + " is deleted");
                 }
 
@@ -73,8 +79,14 @@ public class ConsoleApp {
 
                     int id = Integer.parseInt(paramsArray[0]);
                     int points = Integer.parseInt(paramsArray[1]);
-                    int playersPoints = service.addPoints(id, points);
-                    System.out.println("points added = " + playersPoints + " to player with id = " + id);
+                    Response<Integer> response = service.addPoints(id, points);
+                    if(response.getStatus().equals(Statuses.OK)) {
+                        System.out.println(response.getMessage());
+                        System.out.println(Statuses.OK.getCode());
+                        System.out.println(Statuses.OK.getComment());
+                    }
+                    else
+                        System.err.println(response.getMessage());
                 }
             }
             catch (Exception ex)
